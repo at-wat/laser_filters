@@ -140,12 +140,22 @@ public:
 
     std::string cloud_filter_xml;
 
+    bool configured(false);
     if (using_cloud_filters_deprecated_)
-      cloud_filter_chain_.configure("cloud_filters/filter_chain", private_nh);
+      configured = cloud_filter_chain_.configure("cloud_filters/filter_chain", private_nh);
     else if (using_cloud_filters_wrong_deprecated_)
-      cloud_filter_chain_.configure("cloud_filters/cloud_filter_chain", private_nh);
+      configured = cloud_filter_chain_.configure("cloud_filters/cloud_filter_chain", private_nh);
     else
-      cloud_filter_chain_.configure("cloud_filter_chain", private_nh);
+      configured = cloud_filter_chain_.configure("cloud_filter_chain", private_nh);
+
+    bool exit_on_plugin_init_failure;
+    private_nh.param("exit_on_plugin_init_failure", exit_on_plugin_init_failure, false);
+    if (!configured && exit_on_plugin_init_failure)
+    {
+      ROS_FATAL("Plugin initialization failed!");
+      ros::shutdown();
+      return;
+    }
 
     if (using_scan_filters_deprecated_)
       scan_filter_chain_.configure("scan_filter/filter_chain", private_nh);

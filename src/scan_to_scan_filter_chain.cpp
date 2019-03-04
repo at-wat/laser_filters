@@ -72,10 +72,20 @@ public:
     
     using_filter_chain_deprecated_ = private_nh_.hasParam("filter_chain");
 
+    bool configured(false);
     if (using_filter_chain_deprecated_)
-      filter_chain_.configure("filter_chain", private_nh_);
+      configured = filter_chain_.configure("filter_chain", private_nh_);
     else
-      filter_chain_.configure("scan_filter_chain", private_nh_);
+      configured = filter_chain_.configure("scan_filter_chain", private_nh_);
+
+    bool exit_on_plugin_init_failure;
+    private_nh_.param("exit_on_plugin_init_failure", exit_on_plugin_init_failure, false);
+    if (!configured && exit_on_plugin_init_failure)
+    {
+      ROS_FATAL("Plugin initialization failed!");
+      ros::shutdown();
+      return;
+    }
     
     std::string tf_message_filter_target_frame;
 
